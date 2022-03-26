@@ -9,17 +9,21 @@ import static robot_navigator.ServerState.GETTING_KEY_ID;
 
 public class TEST {
 
-    public static void checkMessageSyntax(String message, ServerState currentState){
-        if(currentState.equals(GETTING_KEY_ID)){
-            try{
-                int i = Integer.parseInt(message);
-                System.out.println(i);
-            }catch (ArithmeticException ex){ex.printStackTrace();}
-        }
-    }
 
     public static void main(String[] args) {
-        String msg = "-12-34";
-        checkMessageSyntax(msg,GETTING_KEY_ID);
+        Robot robot1 = new Robot("ROBOT_1");
+        robot1.setKeyID(10);
+        robot1.setHash(11);
+        robot1.initPosition(0,0);
+        robot1.initDirection(RobotDirection.UP);
+        robot1.printRobotInfo();
+        robot1.moveRight();
+        robot1.printRobotInfo();
+        robot1.moveRight();
+        robot1.printRobotInfo();
+        robot1.moveRight();
+        robot1.printRobotInfo();
+        robot1.moveRight();
+        robot1.printRobotInfo();
     }
 }
