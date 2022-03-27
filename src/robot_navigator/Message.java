@@ -22,11 +22,11 @@ public class Message {
      */
     public String partionMessage(String buffer, List<String> messages){
 
-        //String currentBuffer = buffer;
         for(int i = 0; buffer.contains(END_MESSAGE) ; i++){
             String message = getEndOfCurrentMessage(buffer);
+            System.out.println(message);
             messages.add(message);
-            buffer = buffer.substring(message.length() + 4);
+            buffer = buffer.substring(message.length() + END_MESSAGE.length());
         }
         return buffer;
     }

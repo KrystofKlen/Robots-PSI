@@ -25,5 +25,7 @@ public class TEST {
         robot1.printRobotInfo();
         robot1.moveRight();
         robot1.printRobotInfo();
+        String str = "string\u0007\u0008";
+        System.out.println(END_MESSAGE.length());
     }
 }

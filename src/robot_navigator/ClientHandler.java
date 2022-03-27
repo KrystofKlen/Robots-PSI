@@ -2,9 +2,12 @@ package robot_navigator;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import static robot_navigator.CONSTANTS.*;
 
@@ -14,6 +17,9 @@ public class ClientHandler implements Runnable{
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
     private ServerStateMachine serverStateMachine;
+    private Scanner sc;
+    InputStream is;
+    DataOutputStream out;
 
     public ClientHandler(Socket socket) {
 
@@ -28,6 +34,11 @@ public class ClientHandler implements Runnable{
                             new OutputStreamWriter(socket.getOutputStream()));
             serverStateMachine = new ServerStateMachine();
 
+            sc = new Scanner(new BufferedReader(new InputStreamReader(socket.getInputStream())))
+                    .useDelimiter(Pattern.compile(END_MESSAGE));
+            is = socket.getInputStream();
+            out = new DataOutputStream(socket.getOutputStream());
+
         } catch (IOException ioEx){
             closeEverything();
         }
@@ -38,50 +49,50 @@ public class ClientHandler implements Runnable{
     public void run() {
         Message message = new Message();
         List<String> messagesFromFromClient = new ArrayList<>();
-        String buffer;
         String previousMessage = "";
+        String buffer = "";
+        byte[] buff = new byte[1024];
 
-        while (socket.isConnected()){
+        while (!socket.isClosed()){
             try{
                 socket.setSoTimeout(TIMEOUT_MESSAGE_MILLIS);
-                buffer = bufferedReader.readLine();
-                previousMessage = message.partionMessage(previousMessage + buffer , messagesFromFromClient);
 
-                System.out.println("------------");
-                for(String str: messagesFromFromClient){
-                    System.out.println("S: " + str);
+                if(sc.hasNext()) {
+                    //whole message came
+                    buffer = sc.next();
+                    System.out.println("C: " + buffer);
+                }else{
+                    //System.out.println("IN ELSE: " + buffer);
+                    /*buffer = sc.next();
+                    previousMessage = message.partionMessage(previousMessage + buffer , messagesFromFromClient);
+                    System.out.println("break");
+                    break;*/
                 }
+                //previousMessage = buffer.substring(buffer.length());
+                messagesFromFromClient.add(buffer);
                 serverStateMachine.putToQueue(messagesFromFromClient);
                 messagesFromFromClient.clear();
+                buffer = "";
                 String responce = serverStateMachine.respondToMessage();
-                bufferedWriter.write(responce);
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
+
+                if(!responce.equals("")){
+                    System.out.println("S: " + responce);
+                    bufferedWriter.write(responce);
+
+                    bufferedWriter.flush();
+                }
+
                 if(serverStateMachine.getCurrentState().equals(ServerState.FAIL)){
                     System.out.println("S: CLOSING FOR FAILURE.");
+                    closeEverything();
                     break;
                 }
 
-                /*if(!message.checkMessageLength(messageFromClient.length(), serverStateMachine.getCurrentState())){
-                    //message too long
-                    System.out.println("S: Message too long!" + messageFromClient.length());
-                    throw new IOException();
-                }
-                if(!message.checkIfContainsValidMessage(messageFromClient)){
-                    //not a valid message
-                    System.out.println("S: Not contains " + END_MESSAGE);
-                    throw  new IOException();
-                }
-
-                if(message.checkIfMessageEnded(messageFromClient)){
-                    //message completed
-                    System.out.println("S: Message complete: " + messageFromClient);
-                }
-                String msg1 = message.getEndOfCurrentMessage(messageFromClient);
-                System.out.println("S: Message got: " + msg1 + " but there is more " + messageFromClient);
-                */
-
-            }catch (IOException ioException){
+            } catch (SocketTimeoutException soTe){
+                closeEverything();
+                System.out.println("TIME IS OUT");
+                break;
+            } catch (IOException ioEx){
                 closeEverything();
                 break;
             }

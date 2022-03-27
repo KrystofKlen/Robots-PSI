@@ -9,12 +9,18 @@ import java.util.Queue;
 import static robot_navigator.CONSTANTS.*;
 import static robot_navigator.ServerState.*;
 
+
+
 public class ServerStateMachine {
+
+    private static final int SERVER = 0;
+    private static final int CLIENT = 1;
 
     private ServerState currentState;
     private Queue<String> messagesFromClient;
     private Robot robot;
     private Message msg;
+    private final int [][] keys= { {23019, 32037, 18789, 16443, 18189},{32037, 	29295, 	13603, 29533, 21952}};
 
     public ServerStateMachine() {
         this.currentState = GETTING_USERNAME;
@@ -36,7 +42,8 @@ public class ServerStateMachine {
 
     public String respondToMessage(){
         //no response if no message from client
-        if(messagesFromClient.isEmpty()) return "empty queue";
+        if(messagesFromClient.isEmpty()) return "";
+        if(messagesFromClient.peek().equals("")) return "";
         if(! msg.checkMessageLength(messagesFromClient.peek().length(),currentState) ||
                 ! msg.checkMessageSyntax(messagesFromClient.peek(),currentState)){
             currentState = FAIL;
@@ -54,19 +61,23 @@ public class ServerStateMachine {
                 currentState = FAIL;
                 return SERVER_KEY_OUT_OF_RANGE_ERROR;
             }
-            robot.setHash(countHash());
+            robot.setHash(countHash(robot.getKeyID(), SERVER));
             changeServerState();
-            return String.valueOf(robot.getHash());
+            return String.valueOf(robot.getHash()) + END_MESSAGE;
         }
 
         if(currentState.equals(CONFORMATION)){
-            if(robot.getHash() == Integer.parseInt(messagesFromClient.poll())){
-                changeServerState();
-                return SERVER_OK;
-            }else{
-                currentState = FAIL;
-                return SERVER_LOGIN_FAILED;
-            }
+
+            try{
+                if(checkHash(robot.getKeyID(), Integer.parseInt(messagesFromClient.poll()))){
+                    changeServerState();
+                    return SERVER_OK;
+                }else{
+                    currentState = FAIL;
+                    return SERVER_LOGIN_FAILED;
+                }
+            } catch (NumberFormatException ex){ex.printStackTrace();}
+
         }
         return "TO IMPLEMENT";
     }
@@ -75,13 +86,24 @@ public class ServerStateMachine {
         messagesFromClient.addAll(messages);
     }
 
-    private int countHash(){
+    private int countHash(int keyID, int FLAG_SERVER_OR_CLIENT){
         int asciiValue = 0;
         char [] userName  = robot.getClientUsername().toCharArray();
         for (char c : userName) {
             asciiValue+= (int) c;
         }
-        return (asciiValue * 1000) % 65536;
+        System.out.println("ASCII: " + asciiValue);
+        int hash = (asciiValue * 1000) % 65536;
+        return (hash + keys[FLAG_SERVER_OR_CLIENT][keyID]) % 65536;
+    }
+
+    /**
+     * Counts user hash
+     * @param keyID
+     * @return
+     */
+    private boolean checkHash(int keyID, int conformHashFromClient){
+        return countHash(keyID, CLIENT) == conformHashFromClient;
     }
 
 

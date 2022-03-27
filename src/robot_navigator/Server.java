@@ -32,6 +32,7 @@ public class Server {
             }
         }catch (IOException ioEx){
             ioEx.printStackTrace();
+            closeServerSocket();
         }
     }
 

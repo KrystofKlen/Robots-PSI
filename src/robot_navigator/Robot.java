@@ -96,6 +96,10 @@ public class Robot {
         return this.hash;
     }
 
+    public int getKeyID() {
+        return keyID;
+    }
+
     public boolean setKeyID(int keyID){
         if(keyID > -9999 && keyID < 9999){
             this.keyID = keyID;

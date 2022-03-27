@@ -54,7 +54,7 @@ public class Client {
     public void listenForMessage(){
         new Thread(() -> {
             //listening for messages
-            while (socket.isConnected()){
+            while (!socket.isClosed()){
                 try{
                     String messageFromOthers = bufferedReader.readLine();
                     System.out.println(messageFromOthers);
