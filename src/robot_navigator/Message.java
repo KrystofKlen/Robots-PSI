@@ -43,13 +43,20 @@ public class Message {
 
     public boolean checkMessageLength(int messageLength, ServerState currentState){
         if(currentState.equals(GETTING_USERNAME) && messageLength > USERNAME_MAX_LENGTH) return false;
+        if(currentState.equals(GETTING_KEY_ID) && messageLength > CLIENT_KEY_ID_MAX_MAX_LENGTH) return false;
+        if((currentState.equals(FIRST_MOVE) ||
+                currentState.equals(GETTING_POSITION) ||
+                currentState.equals(GETTING_DIRECTION) ) &&
+                messageLength > CLIENT_OK_MAX_LENGTH) return false;
+        if(currentState.equals(PICKUP) && messageLength > CLIENT_MESSAGE_MAX_LENGTH) return false;
         else return true;
     }
 
-    public boolean checkMessageSyntax(String message, ServerState currentState){
+    public boolean checkMessageLogic(String message, ServerState currentState){
         if(currentState.equals(GETTING_KEY_ID)){
             try{
-                Integer.parseInt(message);
+                int key = Integer.parseInt(message);
+                if(key < 0 || key > 4) return false;
                 return true;
             }catch (NumberFormatException ex){
                 //message should contain numbers but it isn't
@@ -59,7 +66,8 @@ public class Message {
         if(currentState.equals(GETTING_POSITION) ||
         currentState.equals(GETTING_DIRECTION) ||
         currentState.equals(NAVIGATING)){
-            return message.matches("OK \\d \\d") || message.matches("OK -\\d \\d");
+            return message.matches("OK \\d \\d") || message.matches("OK -\\d \\d")
+                    || message.matches("OK \\d -\\d") || message.matches("OK -\\d -\\d");
         }
 
 

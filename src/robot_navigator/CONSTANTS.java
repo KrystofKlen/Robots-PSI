@@ -8,6 +8,8 @@ public class CONSTANTS {
     //_________________CLIENT AUTHENTIFICATION__________________
     public static final int USERNAME_MAX_LENGTH = 20;
     public static final int CLIENT_KEY_ID_MAX_MAX_LENGTH = 5;
+    public static final int CLIENT_OK_MAX_LENGTH = 12;
+    public static final int CLIENT_MESSAGE_MAX_LENGTH = 100;
 
     //___________________SERVER___________________
     public static final int TIMEOUT_MESSAGE_MILLIS = 0;

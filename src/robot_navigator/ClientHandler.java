@@ -69,16 +69,16 @@ public class ClientHandler implements Runnable{
                 }
                 String responce = serverStateMachine.respondToMessage();
 
-                if(serverStateMachine.getCurrentState().equals(ServerState.FAIL)){
-                    System.out.println(System.currentTimeMillis() + "S: CLOSING FOR FAILURE.");
-                    closeEverything();
-                    break;
-                }
-
                 if(!responce.equals("")){
                     System.out.println("S: " + responce);
                     bufferedWriter.write(responce);
                     bufferedWriter.flush();
+                    if(serverStateMachine.getCurrentState().equals(ServerState.FAIL)){
+                        System.out.println("S: CLOSING FOR FAILURE.");
+                        System.out.println("-----------------------");
+                        closeEverything();
+                        break;
+                    }
 
                     if(responce.equals(SERVER_LOGOUT)){
                         System.out.println("S: CLOSING CONNECTION");

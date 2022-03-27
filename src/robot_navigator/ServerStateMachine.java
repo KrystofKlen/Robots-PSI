@@ -48,6 +48,12 @@ public class ServerStateMachine {
     }
 
     public String respondToMessage(){
+        if(! msg.checkMessageLength(
+                messagesFromClient.peek() != null ? messagesFromClient.peek().length() : 0,
+                currentState)){
+            currentState = FAIL;
+            return SERVER_SYNTAX_ERROR;
+        }
         //no response if no message from client
         if(currentState.equals(FIRST_MOVE)) {
             changeServerState();
@@ -68,10 +74,13 @@ public class ServerStateMachine {
 
         if(messagesFromClient.isEmpty()) return "";
         if(messagesFromClient.peek().equals("")) return "";
-        if(! msg.checkMessageLength(messagesFromClient.peek().length(),currentState) ||
-                ! msg.checkMessageSyntax(messagesFromClient.peek(),currentState)){
+        if(! msg.checkMessageLength(messagesFromClient.peek().length(),currentState)){
             currentState = FAIL;
             return SERVER_SYNTAX_ERROR;
+        }
+        if(! msg.checkMessageLogic(messagesFromClient.peek(),currentState)){
+            currentState = FAIL;
+            return SERVER_KEY_OUT_OF_RANGE_ERROR;
         }
 
         if(currentState.equals(GETTING_USERNAME)){
