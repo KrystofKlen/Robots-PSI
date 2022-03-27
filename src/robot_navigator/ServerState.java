@@ -7,8 +7,13 @@ public enum ServerState {
     CONFORMATION,
 
     //ROBOT MOVE____________________________________
+    FIRST_MOVE,
     GETTING_POSITION,
     GETTING_DIRECTION,
+    NAVIGATING,
+
+    //ROBOT REACHED MID
+    PICKUP,
 
     //FAIL
     FAIL

@@ -11,21 +11,9 @@ public class TEST {
 
 
     public static void main(String[] args) {
-        Robot robot1 = new Robot("ROBOT_1");
-        robot1.setKeyID(10);
-        robot1.setHash(11);
-        robot1.initPosition(0,0);
-        robot1.initDirection(RobotDirection.UP);
-        robot1.printRobotInfo();
-        robot1.moveRight();
-        robot1.printRobotInfo();
-        robot1.moveRight();
-        robot1.printRobotInfo();
-        robot1.moveRight();
-        robot1.printRobotInfo();
-        robot1.moveRight();
-        robot1.printRobotInfo();
-        String str = "string\u0007\u0008";
-        System.out.println(END_MESSAGE.length());
+
+        String str = "OK -6 7";
+        System.out.println(str.matches("OK -\\d \\d"));
+
     }
 }

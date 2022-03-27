@@ -11,7 +11,7 @@ public class Robot {
     private int keyID;
 
     public Robot(String clientUsername) {
-        this.currentPosition = null;
+        this.currentPosition = new Position();
         this.clientUsername = clientUsername;
     }
 
@@ -19,13 +19,8 @@ public class Robot {
         return clientUsername;
     }
 
-    public void initPosition(int x, int y){
-        currentPosition = new Position();
-        currentPosition.setPosition(x,y);
-    }
-
-    public void initDirection(RobotDirection direction){
-        currentPosition.setCurrentDirection(direction);
+    public Position getCurrentPosition() {
+        return currentPosition;
     }
 
     public void moveLeft(){

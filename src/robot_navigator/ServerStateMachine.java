@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.regex.Pattern;
 
 import static robot_navigator.CONSTANTS.*;
 import static robot_navigator.ServerState.*;
@@ -20,6 +21,7 @@ public class ServerStateMachine {
     private Queue<String> messagesFromClient;
     private Robot robot;
     private Message msg;
+    private Navigator navigator;
     private final int [][] keys= { {23019, 32037, 18789, 16443, 18189},{32037, 	29295, 	13603, 29533, 21952}};
 
     public ServerStateMachine() {
@@ -36,12 +38,34 @@ public class ServerStateMachine {
         switch (currentState){
             case GETTING_USERNAME -> currentState = GETTING_KEY_ID;
             case GETTING_KEY_ID -> currentState = CONFORMATION;
+            case CONFORMATION -> currentState = FIRST_MOVE;
+            case FIRST_MOVE -> currentState = GETTING_POSITION;
+            case GETTING_POSITION -> currentState = GETTING_DIRECTION;
+            case GETTING_DIRECTION -> currentState = NAVIGATING;
+            case NAVIGATING -> currentState = PICKUP;
         }
         System.out.println("********** STATE CHANGED, CURRENT STATE = " + currentState.toString() + "****************");
     }
 
     public String respondToMessage(){
         //no response if no message from client
+        if(currentState.equals(FIRST_MOVE)) {
+            changeServerState();
+            return SERVER_MOVE;
+        }
+
+        if(currentState.equals(GETTING_POSITION)) {
+            if(msg.readPosition(robot.getCurrentPosition(), messagesFromClient.poll())){
+                robot.printRobotInfo();
+                changeServerState();
+                return SERVER_MOVE;
+            }else{
+                currentState = FAIL;
+                return SERVER_SYNTAX_ERROR;
+            }
+        }
+
+
         if(messagesFromClient.isEmpty()) return "";
         if(messagesFromClient.peek().equals("")) return "";
         if(! msg.checkMessageLength(messagesFromClient.peek().length(),currentState) ||
@@ -65,9 +89,7 @@ public class ServerStateMachine {
             changeServerState();
             return String.valueOf(robot.getHash()) + END_MESSAGE;
         }
-
         if(currentState.equals(CONFORMATION)){
-
             try{
                 if(checkHash(robot.getKeyID(), Integer.parseInt(messagesFromClient.poll()))){
                     changeServerState();
@@ -79,7 +101,33 @@ public class ServerStateMachine {
             } catch (NumberFormatException ex){ex.printStackTrace();}
 
         }
-        return "TO IMPLEMENT";
+        if(currentState.equals(GETTING_DIRECTION)){
+            Position oldPosition = new Position(robot.getCurrentPosition());
+            if(msg.readPosition(robot.getCurrentPosition(), messagesFromClient.poll())){
+                robot.getCurrentPosition().setDirection(oldPosition);
+
+                //robot intented to move forward
+                navigator = new Navigator(robot, robot.getCurrentPosition());
+                robot.printRobotInfo();
+
+                changeServerState();
+                return SERVER_MOVE;
+            }else{
+                currentState = FAIL;
+                return SERVER_SYNTAX_ERROR;
+            }
+        }
+        if(currentState.equals(NAVIGATING)){
+            //set robots posirtiopn from client's message
+            msg.readPosition(robot.getCurrentPosition(),messagesFromClient.poll());
+            //check if the move was successfull
+            navigator.validatePreviousMoveSuccess();
+            //move to next position
+            String responce = navigator.exploreNext();
+            if(responce.equals(SERVER_PICK_UP)) changeServerState();
+            return responce;
+        }
+        else return SERVER_LOGOUT;
     }
 
     public void putToQueue(List<String> messages){
@@ -92,7 +140,7 @@ public class ServerStateMachine {
         for (char c : userName) {
             asciiValue+= (int) c;
         }
-        System.out.println("ASCII: " + asciiValue);
+        //System.out.println("ASCII: " + asciiValue);
         int hash = (asciiValue * 1000) % 65536;
         return (hash + keys[FLAG_SERVER_OR_CLIENT][keyID]) % 65536;
     }

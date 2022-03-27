@@ -51,41 +51,41 @@ public class ClientHandler implements Runnable{
         List<String> messagesFromFromClient = new ArrayList<>();
         String previousMessage = "";
         String buffer = "";
-        byte[] buff = new byte[1024];
 
-        while (!socket.isClosed()){
+        while (true){
             try{
                 socket.setSoTimeout(TIMEOUT_MESSAGE_MILLIS);
-
-                if(sc.hasNext()) {
+                if(!serverStateMachine.getCurrentState().equals(ServerState.FIRST_MOVE) &&
+                        sc.hasNext()  && !sc.hasNext(".*\\z")) {
                     //whole message came
                     buffer = sc.next();
                     System.out.println("C: " + buffer);
+                    messagesFromFromClient.add(buffer);
+                    serverStateMachine.putToQueue(messagesFromFromClient);
+                    messagesFromFromClient.clear();
+                    buffer = "";
                 }else{
-                    //System.out.println("IN ELSE: " + buffer);
-                    /*buffer = sc.next();
-                    previousMessage = message.partionMessage(previousMessage + buffer , messagesFromFromClient);
-                    System.out.println("break");
-                    break;*/
+
                 }
-                //previousMessage = buffer.substring(buffer.length());
-                messagesFromFromClient.add(buffer);
-                serverStateMachine.putToQueue(messagesFromFromClient);
-                messagesFromFromClient.clear();
-                buffer = "";
                 String responce = serverStateMachine.respondToMessage();
+
+                if(serverStateMachine.getCurrentState().equals(ServerState.FAIL)){
+                    System.out.println(System.currentTimeMillis() + "S: CLOSING FOR FAILURE.");
+                    closeEverything();
+                    break;
+                }
 
                 if(!responce.equals("")){
                     System.out.println("S: " + responce);
                     bufferedWriter.write(responce);
-
                     bufferedWriter.flush();
-                }
 
-                if(serverStateMachine.getCurrentState().equals(ServerState.FAIL)){
-                    System.out.println("S: CLOSING FOR FAILURE.");
-                    closeEverything();
-                    break;
+                    if(responce.equals(SERVER_LOGOUT)){
+                        System.out.println("S: CLOSING CONNECTION");
+                        System.out.println("---------------------");
+                        closeEverything();
+                        break;
+                    }
                 }
 
             } catch (SocketTimeoutException soTe){

@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static robot_navigator.CONSTANTS.*;
-import static robot_navigator.ServerState.GETTING_KEY_ID;
-import static robot_navigator.ServerState.GETTING_USERNAME;
+import static robot_navigator.ServerState.*;
 
 public class Message {
     private String message;
@@ -30,6 +29,7 @@ public class Message {
         }
         return buffer;
     }
+
 
     public String getEndOfCurrentMessage(String message){
         int endIndex = message.indexOf(END_MESSAGE);
@@ -56,8 +56,48 @@ public class Message {
                 return false;
             }
         }
+        if(currentState.equals(GETTING_POSITION) ||
+        currentState.equals(GETTING_DIRECTION) ||
+        currentState.equals(NAVIGATING)){
+            return message.matches("OK \\d \\d") || message.matches("OK -\\d \\d");
+        }
+
+
         return true;
     }
+
+    public boolean readPosition(Position position, String message){
+        try{
+            if(message.matches("OK \\d \\d")){
+                int x = Integer.parseInt(message.substring(3,4));
+                int y = Integer.parseInt(message.substring(5,6));
+                System.out.println("READ: X = " + x +" Y = " + y);
+                position.setPosition(x,y);
+            }else if (message.matches("OK -\\d \\d")){
+                int x = Integer.parseInt(message.substring(3,5));
+                int y = Integer.parseInt(message.substring(6,7));
+                System.out.println("READ: X = " + x +" Y = " + y);
+                position.setPosition(x,y);
+            }else if (message.matches("OK \\d -\\d")){
+                int x = Integer.parseInt(message.substring(3,4));
+                int y = Integer.parseInt(message.substring(6,7));
+                System.out.println("READ: X = " + x +" Y = " + y);
+                position.setPosition(x,y);
+            }else if (message.matches("OK -\\d -\\d")){
+                int x = Integer.parseInt(message.substring(3,5));
+                int y = Integer.parseInt(message.substring(6,7));
+                System.out.println("READ: X = " + x +" Y = " + y);
+                position.setPosition(x,y);
+            }else{
+                return false;
+            }
+        }catch (NumberFormatException ex){
+            ex.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
 
 
 
