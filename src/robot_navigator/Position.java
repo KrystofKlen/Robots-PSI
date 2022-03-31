@@ -8,13 +8,19 @@ import static robot_navigator.RobotDirection.*;
 public class Position {
     private int x,y;
     private RobotDirection currentDirection;
-    public boolean visited;
+    public String command;
 
     public Position(){currentDirection = null;}
     public Position(int x, int y){
         this.x = x;
         this.y = y;
         currentDirection = null;
+    }
+    public Position(int x, int y, RobotDirection direction, String command){
+        this.x = x;
+        this.y = y;
+        currentDirection = direction;
+        this.command = command;
     }
     public Position(Position position){
         this.x = position.getX();

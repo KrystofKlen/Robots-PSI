@@ -12,7 +12,7 @@ public class CONSTANTS {
     public static final int CLIENT_MESSAGE_MAX_LENGTH = 100;
 
     //___________________SERVER___________________
-    public static final int TIMEOUT_MESSAGE_MILLIS = 0;
+    public static final int TIMEOUT_MESSAGE_MILLIS = 1000;
 
     public static final String SERVER_KEY_REQUEST = "107 KEY REQUEST" + END_MESSAGE;
     public static final String SERVER_OK = "200 OK" + END_MESSAGE;

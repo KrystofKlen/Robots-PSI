@@ -23,24 +23,35 @@ public class Robot {
         return currentPosition;
     }
 
+    public void updatePosition(Navigator navigator, String command){
+
+        Object [][] move = {{UP,0,1},{DOWN,0,-1},{RIGHT,1,0},{LEFT, -1,0}};
+        if(command.equals(CONSTANTS.SERVER_MOVE)){
+            int i;
+            for(i = 0; !currentPosition.getCurrentDirection().equals(move[i][0]); i++);
+            currentPosition.setPosition(
+                    currentPosition.getX() + (int) move[i][1],
+                    currentPosition.getY() + (int) move[i][2]
+            );
+        }
+        else currentPosition
+                .setDirection(navigator.getDirection(command,currentPosition.getCurrentDirection()));
+    }
+
     public void moveLeft(){
         if(currentPosition == null) return;
 
         switch (currentPosition.getCurrentDirection()){
             case UP -> {
-                currentPosition.setPosition(currentPosition.getX() - 1, currentPosition.getY());
                 currentPosition.setCurrentDirection(LEFT);
             }
             case DOWN -> {
-                currentPosition.setPosition(currentPosition.getX() + 1, currentPosition.getY());
                 currentPosition.setCurrentDirection(RIGHT);
             }
             case LEFT -> {
-                currentPosition.setPosition(currentPosition.getX(), currentPosition.getY() - 1);
                 currentPosition.setCurrentDirection(DOWN);
             }
             case RIGHT -> {
-                currentPosition.setPosition(currentPosition.getX(), currentPosition.getY() + 1);
                 currentPosition.setCurrentDirection(UP);
             }
         }
@@ -51,19 +62,15 @@ public class Robot {
 
         switch (currentPosition.getCurrentDirection()){
             case UP -> {
-                currentPosition.setPosition(currentPosition.getX() + 1, currentPosition.getY());
                 currentPosition.setCurrentDirection(RIGHT);
             }
             case DOWN -> {
-                currentPosition.setPosition(currentPosition.getX() - 1, currentPosition.getY());
                 currentPosition.setCurrentDirection(LEFT);
             }
             case LEFT -> {
-                currentPosition.setPosition(currentPosition.getX() , currentPosition.getY() + 1);
                 currentPosition.setCurrentDirection(UP);
             }
             case RIGHT -> {
-                currentPosition.setPosition(currentPosition.getX() , currentPosition.getY() - 1);
                 currentPosition.setCurrentDirection(DOWN);
             }
         }

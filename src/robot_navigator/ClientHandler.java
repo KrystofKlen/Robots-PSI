@@ -4,9 +4,8 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.CharBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
 import static robot_navigator.CONSTANTS.*;
@@ -19,7 +18,8 @@ public class ClientHandler implements Runnable{
     private ServerStateMachine serverStateMachine;
     private Scanner sc;
     InputStream is;
-    DataOutputStream out;
+    DataInputStream in;
+    boolean clientResponded = false;
 
     public ClientHandler(Socket socket) {
 
@@ -28,7 +28,7 @@ public class ClientHandler implements Runnable{
 
             this.bufferedReader =
                     new BufferedReader(
-                            new InputStreamReader(socket.getInputStream()));
+                            new InputStreamReader(new DataInputStream(socket.getInputStream())));
             this. bufferedWriter =
                     new BufferedWriter(
                             new OutputStreamWriter(socket.getOutputStream()));
@@ -37,7 +37,7 @@ public class ClientHandler implements Runnable{
             sc = new Scanner(new BufferedReader(new InputStreamReader(socket.getInputStream())))
                     .useDelimiter(Pattern.compile(END_MESSAGE));
             is = socket.getInputStream();
-            out = new DataOutputStream(socket.getOutputStream());
+            in = new DataInputStream(socket.getInputStream());
 
         } catch (IOException ioEx){
             closeEverything();
@@ -47,18 +47,38 @@ public class ClientHandler implements Runnable{
 
     @Override
     public void run() {
-        Message message = new Message();
+        Timer timer;
+        TimerTask task;
         List<String> messagesFromFromClient = new ArrayList<>();
         String previousMessage = "";
         String buffer = "";
-
+        char [] buff = new char[100];
+        Scanner scc = new Scanner(StringReader.nullReader());
         while (true){
             try{
                 socket.setSoTimeout(TIMEOUT_MESSAGE_MILLIS);
-                if(!serverStateMachine.getCurrentState().equals(ServerState.FIRST_MOVE) &&
-                        sc.hasNext()  && !sc.hasNext(".*\\z")) {
+                if(!serverStateMachine.getCurrentState().equals(ServerState.FIRST_MOVE)) {
+                    char r, prev = '\u0007';
+                    boolean wasA = false;
+
+                    while (!buffer.contains(END_MESSAGE)) {
+                        //System.out.println(buffer);
+                        r = (char) bufferedReader.read();
+                        buffer += r;
+                    }
+                    buffer = buffer.substring(0,buffer.length() - 2);
+                    //buffer.trim();
+                    System.out.println("C: " + buffer);
+                    messagesFromFromClient.add(buffer);
+                    serverStateMachine.putToQueue(messagesFromFromClient);
+                    messagesFromFromClient.clear();
+                    buffer = "";
+                }
+                /*if(!serverStateMachine.getCurrentState().equals(ServerState.FIRST_MOVE) &&
+                    sc.hasNext()  && !sc.hasNext(".*\\z")) {
                     //whole message came
-                    buffer = sc.next();
+
+                    clientResponded = true;
                     System.out.println("C: " + buffer);
                     messagesFromFromClient.add(buffer);
                     serverStateMachine.putToQueue(messagesFromFromClient);
@@ -66,9 +86,9 @@ public class ClientHandler implements Runnable{
                     buffer = "";
                 }else{
 
-                }
-                String responce = serverStateMachine.respondToMessage();
+                }*/
 
+                String responce = serverStateMachine.respondToMessage();
                 if(!responce.equals("")){
                     System.out.println("S: " + responce);
                     bufferedWriter.write(responce);
@@ -87,12 +107,13 @@ public class ClientHandler implements Runnable{
                         break;
                     }
                 }
-
-            } catch (SocketTimeoutException soTe){
+                clientResponded = false;
+                //System.out.println("CLIENT WAIT");
+            }catch (SocketTimeoutException se){
                 closeEverything();
-                System.out.println("TIME IS OUT");
                 break;
-            } catch (IOException ioEx){
+            }
+            catch (Exception ioEx){
                 closeEverything();
                 break;
             }

@@ -41,8 +41,9 @@ public class ServerStateMachine {
             case CONFORMATION -> currentState = FIRST_MOVE;
             case FIRST_MOVE -> currentState = GETTING_POSITION;
             case GETTING_POSITION -> currentState = GETTING_DIRECTION;
-            case GETTING_DIRECTION -> currentState = NAVIGATING;
-            case NAVIGATING -> currentState = PICKUP;
+            case GETTING_DIRECTION -> currentState = DIRECTING_TOWARDS_X;
+            case DIRECTING_TOWARDS_X -> currentState = NAVIGATING_TO_X;
+            case NAVIGATING_TO_X -> currentState = PICKUP;
         }
         System.out.println("********** STATE CHANGED, CURRENT STATE = " + currentState.toString() + "****************");
     }
@@ -120,21 +121,89 @@ public class ServerStateMachine {
                 robot.printRobotInfo();
 
                 changeServerState();
-                return SERVER_MOVE;
+                //return SERVER_MOVE;
             }else{
                 currentState = FAIL;
                 return SERVER_SYNTAX_ERROR;
             }
         }
-        if(currentState.equals(NAVIGATING)){
-            //set robots posirtiopn from client's message
-            msg.readPosition(robot.getCurrentPosition(),messagesFromClient.poll());
-            //check if the move was successfull
-            navigator.validatePreviousMoveSuccess();
-            //move to next position
-            String responce = navigator.exploreNext();
+        if(currentState.equals(DIRECTING_TOWARDS_X)){
+            robot.printRobotInfo();
+            navigator.turnTowardsY(robot.getCurrentPosition());
+            navigator.addStraightMovesAlongX(robot.getCurrentPosition());
+            navigator.moves.forEach(str-> System.out.println(str));
+            changeServerState();
+        }
+
+
+        if(currentState.equals(NAVIGATING_TO_X)){
+            System.out.println("_______________________________________________________________");
+            System.out.println("NAVIGATING_TO_X");
+            navigator.moves.forEach(str-> System.out.println(str));
+            //checking if robot reached mid
+            if(robot.getCurrentPosition().equals(new Position(0,0))){
+                changeServerState();
+                return SERVER_PICK_UP;
+            }
+            //checking if previous move was ok
+            System.out.println("HERE1");
+            Position clientPosition = new Position();
+            if(!messagesFromClient.isEmpty()) {
+                msg.readPosition(clientPosition,messagesFromClient.poll());
+                if(!navigator.checkMove(clientPosition)){
+                    //we have a obstacle
+                    navigator.obstacles.add(clientPosition);
+                    //we also need to add steps to move around and take away redundant steps
+                    //reset robots position
+                    robot.getCurrentPosition().setPosition(clientPosition.getX(),clientPosition.getY());
+                    //direction by robot same because it  was moving forward
+                }
+            }
+            if(navigator.moves.isEmpty() || robot.getCurrentPosition().getX() == 0){
+                //we are at X = 0;
+                //changeServerState();
+                System.out.println("ROBOT SHOULD BE 0 " + robot.getCurrentPosition().getX() + "," +
+                robot.getCurrentPosition().getY());
+                if(robot.getCurrentPosition().equals(new Position(0,0))){
+                    changeServerState();
+                    return SERVER_PICK_UP;
+                }
+                System.out.println("HERE2" + navigator.moves.isEmpty());
+                navigator.moves.clear();
+                //adding steps to turn to y
+                navigator.turnTowardsX(robot.getCurrentPosition());
+                navigator.addStraightMovesAlongY(robot.getCurrentPosition());
+            }
+
+            //executing next move
+            System.out.println("HERE3");
+
+            String plannedCommand = navigator.moves.get(0);
+            navigator.setCheckFlag(plannedCommand);
+            robot.updatePosition(navigator, plannedCommand);
+            navigator.moves.remove(0);
+            return plannedCommand;
+
+
+            //check if previous move successfull
+
+        /*    if(navigator.robotMoved()){
+                System.out.println("move OK -> " + navigator.anticipatedPosition.getX() + " " +
+                        navigator.anticipatedPosition.getY());
+                navigator.updateRobotPosition();
+            }
+            else {
+                System.out.println("goind around");
+                navigator.goAroundObstacle();
+                navigator.obstacles.add(navigator.anticipatedPosition);
+            }
+
+            //execute next move
+            String responce = navigator.executeMove();
+
             if(responce.equals(SERVER_PICK_UP)) changeServerState();
-            return responce;
+            else if(responce.equals(SERVER_MOVE)) navigator.robotWasMovedForward = true;
+            return responce;*/
         }
         else return SERVER_LOGOUT;
     }
