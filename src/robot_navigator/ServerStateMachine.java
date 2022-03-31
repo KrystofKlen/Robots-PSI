@@ -23,6 +23,7 @@ public class ServerStateMachine {
     private Message msg;
     private Navigator navigator;
     private final int [][] keys= { {23019, 32037, 18789, 16443, 18189},{32037, 	29295, 	13603, 29533, 21952}};
+    public boolean firstTurnIFObstacleAheadDone = false;
 
     public ServerStateMachine() {
         this.currentState = GETTING_USERNAME;
@@ -112,14 +113,29 @@ public class ServerStateMachine {
 
         }
         if(currentState.equals(GETTING_DIRECTION)){
+            System.out.println("GETTING DIRECTION:");
             Position oldPosition = new Position(robot.getCurrentPosition());
             if(msg.readPosition(robot.getCurrentPosition(), messagesFromClient.poll())){
-                robot.getCurrentPosition().setDirection(oldPosition);
+                //position syntax ok
+                try{
+                    robot.getCurrentPosition().setDirection(oldPosition);
+                    System.out.println("J");
+                }catch (IllegalArgumentException ilex){
+                    //ROBOT WAS NOT MOVED, IT HIT OBSTACLE
+                    System.out.println("HERE" + firstTurnIFObstacleAheadDone);
+                    if(firstTurnIFObstacleAheadDone){
+                        System.out.println("HERE1");
+                        return SERVER_MOVE;
+                    }else{
+                        System.out.println("HERE2");
+                        firstTurnIFObstacleAheadDone = true;
+                        return SERVER_TURN_LEFT;
+                    }
+                }
 
+                robot.printRobotInfo();
                 //robot intented to move forward
                 navigator = new Navigator(robot, robot.getCurrentPosition());
-                robot.printRobotInfo();
-
                 changeServerState();
                 //return SERVER_MOVE;
             }else{
@@ -146,14 +162,28 @@ public class ServerStateMachine {
                 return SERVER_PICK_UP;
             }
             //checking if previous move was ok
-            System.out.println("HERE1");
             Position clientPosition = new Position();
             if(!messagesFromClient.isEmpty()) {
                 msg.readPosition(clientPosition,messagesFromClient.poll());
+                //System.out.println("!!!!!!!!!!!!!!!!!!! " + clientPosition.getX() +","+clientPosition.getY());
                 if(!navigator.checkMove(clientPosition)){
                     //we have a obstacle
+                    System.out.println("OBSTACLE");
                     navigator.obstacles.add(clientPosition);
                     //we also need to add steps to move around and take away redundant steps
+                    System.out.println("----------------------OBSTACLES--------------------------------");
+                    System.out.println("BEFORE:");
+                    navigator.moves.forEach(str-> System.out.println(str));
+                    if(robot.getCurrentPosition().getX() != 0){
+                        System.out.println("A");
+                        navigator.moveAroundObstacleAlongX(robot.getCurrentPosition());
+                    }else{
+                        System.out.println("B");
+                        navigator.moveAroundObstacleAlongY(robot.getCurrentPosition());
+                    }
+                    System.out.println("!!! afrer !!!:");
+                    navigator.moves.forEach(str-> System.out.println(str));
+                    System.out.println("________________________________________________________________");
                     //reset robots position
                     robot.getCurrentPosition().setPosition(clientPosition.getX(),clientPosition.getY());
                     //direction by robot same because it  was moving forward
@@ -162,13 +192,10 @@ public class ServerStateMachine {
             if(navigator.moves.isEmpty() || robot.getCurrentPosition().getX() == 0){
                 //we are at X = 0;
                 //changeServerState();
-                System.out.println("ROBOT SHOULD BE 0 " + robot.getCurrentPosition().getX() + "," +
-                robot.getCurrentPosition().getY());
                 if(robot.getCurrentPosition().equals(new Position(0,0))){
                     changeServerState();
                     return SERVER_PICK_UP;
                 }
-                System.out.println("HERE2" + navigator.moves.isEmpty());
                 navigator.moves.clear();
                 //adding steps to turn to y
                 navigator.turnTowardsX(robot.getCurrentPosition());
@@ -176,7 +203,6 @@ public class ServerStateMachine {
             }
 
             //executing next move
-            System.out.println("HERE3");
 
             String plannedCommand = navigator.moves.get(0);
             navigator.setCheckFlag(plannedCommand);

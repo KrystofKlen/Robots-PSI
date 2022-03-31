@@ -15,12 +15,18 @@ public class TEST {
 
         Robot r = new Robot("R");
         Navigator nv = new Navigator(r,null);
-        r.getCurrentPosition().setDirection(RobotDirection.UP);
+        r.getCurrentPosition().setDirection(RobotDirection.LEFT);
         r.getCurrentPosition().setPosition(2,1);
-        r.updatePosition(nv,SERVER_TURN_RIGHT);
-        r.updatePosition(nv,SERVER_MOVE);
-        r.printRobotInfo();
 
+        nv.moves.add("***************** move *********");
+        nv.moves.add("***************** move *********");
+        nv.moves.add("***************** move *********");
+
+
+        r.getCurrentPosition().setPosition(1,1);
+
+        nv.moveAroundObstacleAlongX(r.getCurrentPosition());
+        nv.moves.forEach(str-> System.out.println(str));
     }
 
 

@@ -28,15 +28,17 @@ public class Position {
         currentDirection = position.getCurrentDirection();
     }
 
-    public void setDirection(Position oldPosition){
+    public void setDirection(Position oldPosition) throws IllegalArgumentException{
         if(x > oldPosition.getX()){
             currentDirection = RIGHT;
         }else if(y > oldPosition.getY()){
             currentDirection = UP;
         }else if(x < oldPosition.getX()){
             currentDirection = LEFT;
-        }else{
+        }else if(y < oldPosition.getY()){
             currentDirection = DOWN;
+        }else{
+            throw new IllegalArgumentException("ROBOT WAS NOT MOVET, IT HIT OBSTACLE");
         }
     }
     public void setDirection(RobotDirection direction){
