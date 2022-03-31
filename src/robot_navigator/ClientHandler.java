@@ -47,27 +47,28 @@ public class ClientHandler implements Runnable{
 
     @Override
     public void run() {
-        Timer timer;
-        TimerTask task;
         List<String> messagesFromFromClient = new ArrayList<>();
-        String previousMessage = "";
         String buffer = "";
-        char [] buff = new char[100];
-        Scanner scc = new Scanner(StringReader.nullReader());
+        String responce = "";
+
         while (true){
             try{
                 socket.setSoTimeout(TIMEOUT_MESSAGE_MILLIS);
                 if(!serverStateMachine.getCurrentState().equals(ServerState.FIRST_MOVE)) {
-                    char r, prev = '\u0007';
-                    boolean wasA = false;
-
-                    while (!buffer.contains(END_MESSAGE)) {
-                        //System.out.println(buffer);
+                    char r;
+                    while (!buffer.contains(END_MESSAGE) && buffer.length() < 100) {
                         r = (char) bufferedReader.read();
                         buffer += r;
+                        if(!serverStateMachine.getCurrentState().equals(ServerState.LOG_OUT) &&
+                        buffer.length() >= 20) break;
+                    }
+                    if(!buffer.contains(END_MESSAGE)){
+                        bufferedWriter.write(SERVER_SYNTAX_ERROR);
+                        bufferedWriter.flush();
+                        closeEverything();
+                        break;
                     }
                     buffer = buffer.substring(0,buffer.length() - 2);
-                    //buffer.trim();
                     System.out.println("C: " + buffer);
 
                     messagesFromFromClient.add(buffer);
@@ -76,7 +77,7 @@ public class ClientHandler implements Runnable{
                     buffer = "";
                 }
 
-                String responce = serverStateMachine.respondToMessage();
+                responce = serverStateMachine.respondToMessage();
                 if(!responce.equals("")){
                     System.out.println("S: " + responce);
                     bufferedWriter.write(responce);
@@ -87,7 +88,6 @@ public class ClientHandler implements Runnable{
                         closeEverything();
                         break;
                     }
-
                     if(responce.equals(SERVER_LOGOUT)){
                         System.out.println("S: CLOSING CONNECTION");
                         System.out.println("---------------------");

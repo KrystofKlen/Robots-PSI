@@ -13,13 +13,14 @@ public class Message {
     private String message;
 
     public boolean checkMessageLength(int messageLength, ServerState currentState){
-        if(currentState.equals(GETTING_USERNAME) && messageLength > USERNAME_MAX_LENGTH) return false;
+        if(!currentState.equals(PICKUP) && messageLength > REGULAR_MESSAGE_MAX_LENGTH) return false;
+        if(currentState.equals(GETTING_USERNAME) && messageLength >= USERNAME_MAX_LENGTH) return false;
         if(currentState.equals(GETTING_KEY_ID) && messageLength > CLIENT_KEY_ID_MAX_MAX_LENGTH) return false;
         if((currentState.equals(FIRST_MOVE) ||
                 currentState.equals(GETTING_POSITION) ||
                 currentState.equals(GETTING_DIRECTION) ) &&
                 messageLength > CLIENT_OK_MAX_LENGTH) return false;
-        if(currentState.equals(PICKUP) && messageLength > CLIENT_MESSAGE_MAX_LENGTH) return false;
+        if(currentState.equals(PICKUP) && messageLength > CLIENT_FINAL_MESSAGE_MAX_LENGTH) return false;
         else return true;
     }
 
@@ -42,13 +43,13 @@ public class Message {
                     || message.matches("OK \\d+ -\\d+") || message.matches("OK -\\d+ -\\d+");
         }
 
-
         return true;
     }
 
     public boolean readPosition(Position position, String message){
         try{
             Scanner sc = new Scanner(message);
+            if(!message.matches("OK -?\\d+ -?\\d+")) return false;
             sc.skip(Pattern.compile("OK\\s+"));
             int x = sc.nextInt();
             int y = sc.nextInt();

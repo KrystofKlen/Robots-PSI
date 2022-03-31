@@ -134,7 +134,7 @@ public class Navigator {
         //already in good direction (located on x axes)
         if( currentPosition.getY()==0 ) return;
 
-        //turn towards x axes to lower y, when robot arrives comes either from left or from right to Y axes
+        //turn towards x axes to lower y
         Object [][] arr = {{UP,2},{RIGHT,1},{DOWN,2},{LEFT,1}};
         int i;
         for(i = 0; i<arr.length && !arr[i][0].equals(currentPosition.getCurrentDirection()); i++);
@@ -142,9 +142,13 @@ public class Navigator {
             moves.add(currentPosition.getY() > 0 ? SERVER_TURN_LEFT : SERVER_TURN_RIGHT);
             return;
         }
-        if(arr[i][0].equals(RIGHT)) {
+        else if(arr[i][0].equals(RIGHT)) {
             moves.add(currentPosition.getY() > 0 ? SERVER_TURN_RIGHT : SERVER_TURN_LEFT);
             return;
+        }
+        else if((arr[i][0].equals(UP) && currentPosition.getY() > 0) || (arr[i][0].equals(DOWN) && currentPosition.getY() < 0)) {
+            moves.add(SERVER_TURN_LEFT);
+            moves.add(SERVER_TURN_LEFT);
         }
     }
 

@@ -42,7 +42,7 @@ public class ServerStateMachine {
             case GETTING_POSITION -> currentState = GETTING_DIRECTION;
             case GETTING_DIRECTION -> currentState = DIRECTING_TOWARDS_X;
             case DIRECTING_TOWARDS_X -> currentState = NAVIGATING_TO_X;
-            case NAVIGATING_TO_X -> currentState = PICKUP;
+            case NAVIGATING_TO_X -> currentState = LOG_OUT;
         }
         System.out.println("********** STATE CHANGED, CURRENT STATE = " + currentState.toString() + "****************");
     }
@@ -116,7 +116,9 @@ public class ServerStateMachine {
         }
         if(currentState.equals(CONFORMATION)){
             try{
-                if(checkHash(robot.getKeyID(), Integer.parseInt(messagesFromClient.poll()))){
+                int confirmationNum = Integer.parseInt(messagesFromClient.poll());
+                if(confirmationNum > 99999) return SERVER_SYNTAX_ERROR;
+                if(checkHash(robot.getKeyID(), confirmationNum)){
                     changeServerState();
                     return SERVER_OK;
                 }else{
@@ -187,7 +189,7 @@ public class ServerStateMachine {
             boolean moveWasOK = navigator.checkMove(clientPosition);
             if(!moveWasOK){
                 //reset robots position
-                robot.getCurrentPosition().setPosition(clientPosition.getX(),clientPosition.getY());
+                robot.getCurrentPosition().setPosition(clientPosition.getX(), clientPosition.getY());
                 //direction by robot same because it  was moving forward
             }
 

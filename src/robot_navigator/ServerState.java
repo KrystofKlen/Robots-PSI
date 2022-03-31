@@ -17,6 +17,7 @@ public enum ServerState {
 
     //ROBOT REACHED MID
     PICKUP,
+    LOG_OUT,
 
     //FAIL
     FAIL
