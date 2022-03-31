@@ -6,7 +6,7 @@ public class CONSTANTS {
     public static final String MESSAGE_ENDING_PATTERN = ".*\\a\\b";
 
     //_________________CLIENT AUTHENTIFICATION__________________
-    public static final int USERNAME_MAX_LENGTH = 20;
+    public static final int USERNAME_MAX_LENGTH = 18;
     public static final int CLIENT_KEY_ID_MAX_MAX_LENGTH = 5;
     public static final int CLIENT_OK_MAX_LENGTH = 12;
     public static final int CLIENT_MESSAGE_MAX_LENGTH = 100;

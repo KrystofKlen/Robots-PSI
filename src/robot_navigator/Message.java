@@ -23,16 +23,16 @@ public class Message {
         else return true;
     }
 
-    public boolean checkMessageLogic(String message, ServerState currentState){
+    public boolean checkMessageLogic(String message, ServerState currentState) throws SyntaxError, KeyOutOfRange{
         if(currentState.equals(GETTING_KEY_ID)){
             try{
                 int key = Integer.parseInt(message);
-                if(key < 0 || key > 4) return false;
+                if(key < 0 || key > 4) throw new KeyOutOfRange(); //key out of range
                 return true;
             }catch (NumberFormatException ex){
                 //message should contain numbers but it isn't
                 System.out.println("FAIL " + message);
-                return false;
+                throw new SyntaxError();
             }
         }
         if(currentState.equals(GETTING_POSITION) ||

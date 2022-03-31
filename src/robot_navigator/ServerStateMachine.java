@@ -47,7 +47,7 @@ public class ServerStateMachine {
         System.out.println("********** STATE CHANGED, CURRENT STATE = " + currentState.toString() + "****************");
     }
 
-    public String respondToMessage() throws RobotDamagedException {
+    public String respondToMessage() {
         if(! msg.checkMessageLength(
                 messagesFromClient.peek() != null ? messagesFromClient.peek().length() : 0,
                 currentState)){
@@ -78,13 +78,23 @@ public class ServerStateMachine {
             currentState = FAIL;
             return SERVER_SYNTAX_ERROR;
         }
-        if(! msg.checkMessageLogic(messagesFromClient.peek(),currentState)){
+        try{
+            msg.checkMessageLogic(messagesFromClient.peek(),currentState);
+        }catch (KeyOutOfRange korex){
             currentState = FAIL;
             return SERVER_KEY_OUT_OF_RANGE_ERROR;
+        }catch (SyntaxError seex){
+            currentState = FAIL;
+            return SERVER_SYNTAX_ERROR;
         }
 
         if(currentState.equals(GETTING_USERNAME)){
-            robot = new Robot( messagesFromClient.poll());
+            String message = messagesFromClient.poll();
+            if(!msg.checkMessageLength(message.length(),currentState)){
+                currentState = FAIL;
+                return SERVER_SYNTAX_ERROR;
+            }
+            robot = new Robot(message);
             changeServerState();
            return SERVER_KEY_REQUEST;
         }

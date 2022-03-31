@@ -69,24 +69,12 @@ public class ClientHandler implements Runnable{
                     buffer = buffer.substring(0,buffer.length() - 2);
                     //buffer.trim();
                     System.out.println("C: " + buffer);
+
                     messagesFromFromClient.add(buffer);
                     serverStateMachine.putToQueue(messagesFromFromClient);
                     messagesFromFromClient.clear();
                     buffer = "";
                 }
-                /*if(!serverStateMachine.getCurrentState().equals(ServerState.FIRST_MOVE) &&
-                    sc.hasNext()  && !sc.hasNext(".*\\z")) {
-                    //whole message came
-
-                    clientResponded = true;
-                    System.out.println("C: " + buffer);
-                    messagesFromFromClient.add(buffer);
-                    serverStateMachine.putToQueue(messagesFromFromClient);
-                    messagesFromFromClient.clear();
-                    buffer = "";
-                }else{
-
-                }*/
 
                 String responce = serverStateMachine.respondToMessage();
                 if(!responce.equals("")){
@@ -110,9 +98,6 @@ public class ClientHandler implements Runnable{
                 clientResponded = false;
                 //System.out.println("CLIENT WAIT");
             }catch (SocketTimeoutException se){
-                closeEverything();
-                break;
-            }catch (RobotDamagedException rde){
                 closeEverything();
                 break;
             } catch (Exception ioEx){
