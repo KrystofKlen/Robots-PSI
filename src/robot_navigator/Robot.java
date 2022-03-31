@@ -9,10 +9,12 @@ public class Robot {
     private String clientUsername;
     private int hash;
     private int keyID;
+    public int numberOfCrashes;
 
     public Robot(String clientUsername) {
         this.currentPosition = new Position();
         this.clientUsername = clientUsername;
+        numberOfCrashes = 0;
     }
 
     public String getClientUsername() {

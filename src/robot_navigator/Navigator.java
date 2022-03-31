@@ -12,6 +12,8 @@ public class Navigator {
     public List<String> moves;
     private boolean needToCheckMove = false;
     public List<Position> obstacles;
+    public int movesNecessaryToDriveAroundY = 0;
+    public int movesNecessaryToDriveAroundX = 0;
 
 
 
@@ -40,6 +42,7 @@ public class Navigator {
         List<String> goHalfWayRL = List.of(SERVER_TURN_RIGHT, SERVER_MOVE,SERVER_TURN_LEFT, SERVER_MOVE);
 
         if(Math.abs(x) - 1 == 0 && direction.equals(LEFT)) {
+
             //moves.addAll(y>0 ? goHalfWayLR: goHalfWayRL);
             for(int i = 0; i<4; i++){
                 moves.add(i,y>0 ? goHalfWayLR.get(i) : goHalfWayRL.get(i));
@@ -53,10 +56,11 @@ public class Navigator {
             }
             return;
         }
+
         for(int i = 0; i<8; i++){
             moves.add(i,goFullyAround.get(i));
         }
-       // moves.addAll(goFullyAround);
+        movesNecessaryToDriveAroundX = 7;
     }
 
     /**
@@ -64,8 +68,14 @@ public class Navigator {
      * @param currentPosition
      */
     public void moveAroundObstacleAlongY(Position currentPosition){
-        List<String> goFullyAround = List.of(SERVER_TURN_LEFT, SERVER_MOVE, SERVER_TURN_RIGHT,SERVER_MOVE, SERVER_TURN_LEFT, SERVER_MOVE);
-        moves.addAll(goFullyAround);
+
+        List<String> goFullyAround = List.of(SERVER_TURN_LEFT, SERVER_MOVE,SERVER_TURN_RIGHT,
+                SERVER_MOVE,SERVER_MOVE,SERVER_TURN_RIGHT,SERVER_MOVE, SERVER_TURN_LEFT);
+        for(int i = 0; i<8; i++){
+            moves.add(i,goFullyAround.get(i));
+        }
+        System.out.println("MOVES NECASSARY SET &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+        movesNecessaryToDriveAroundY = 7;
     }
 
    public void setCheckFlag(String command){

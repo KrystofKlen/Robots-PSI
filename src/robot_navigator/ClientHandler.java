@@ -112,8 +112,10 @@ public class ClientHandler implements Runnable{
             }catch (SocketTimeoutException se){
                 closeEverything();
                 break;
-            }
-            catch (Exception ioEx){
+            }catch (RobotDamagedException rde){
+                closeEverything();
+                break;
+            } catch (Exception ioEx){
                 closeEverything();
                 break;
             }

@@ -1,10 +1,8 @@
 package robot_navigator;
 
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.io.IOException;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static robot_navigator.CONSTANTS.*;
@@ -49,7 +47,7 @@ public class ServerStateMachine {
         System.out.println("********** STATE CHANGED, CURRENT STATE = " + currentState.toString() + "****************");
     }
 
-    public String respondToMessage(){
+    public String respondToMessage() throws RobotDamagedException {
         if(! msg.checkMessageLength(
                 messagesFromClient.peek() != null ? messagesFromClient.peek().length() : 0,
                 currentState)){
@@ -163,73 +161,64 @@ public class ServerStateMachine {
             }
             //checking if previous move was ok
             Position clientPosition = new Position();
+
             if(!messagesFromClient.isEmpty()) {
                 msg.readPosition(clientPosition,messagesFromClient.poll());
-                //System.out.println("!!!!!!!!!!!!!!!!!!! " + clientPosition.getX() +","+clientPosition.getY());
-                if(!navigator.checkMove(clientPosition)){
-                    //we have a obstacle
-                    System.out.println("OBSTACLE");
-                    navigator.obstacles.add(clientPosition);
-                    //we also need to add steps to move around and take away redundant steps
-                    System.out.println("----------------------OBSTACLES--------------------------------");
-                    System.out.println("BEFORE:");
-                    navigator.moves.forEach(str-> System.out.println(str));
-                    if(robot.getCurrentPosition().getX() != 0){
-                        System.out.println("A");
-                        navigator.moveAroundObstacleAlongX(robot.getCurrentPosition());
-                    }else{
-                        System.out.println("B");
-                        navigator.moveAroundObstacleAlongY(robot.getCurrentPosition());
-                    }
-                    System.out.println("!!! afrer !!!:");
-                    navigator.moves.forEach(str-> System.out.println(str));
-                    System.out.println("________________________________________________________________");
-                    //reset robots position
-                    robot.getCurrentPosition().setPosition(clientPosition.getX(),clientPosition.getY());
-                    //direction by robot same because it  was moving forward
-                }
             }
-            if(navigator.moves.isEmpty() || robot.getCurrentPosition().getX() == 0){
+
+            boolean moveWasOK = navigator.checkMove(clientPosition);
+            if(!moveWasOK){
+                //reset robots position
+                robot.getCurrentPosition().setPosition(clientPosition.getX(),clientPosition.getY());
+                //direction by robot same because it  was moving forward
+            }
+
+            if(navigator.moves.isEmpty() || robot.getCurrentPosition().getX() == 0
+            || robot.getCurrentPosition().getY() == 0 || !moveWasOK){
                 //we are at X = 0;
                 //changeServerState();
+
                 if(robot.getCurrentPosition().equals(new Position(0,0))){
                     changeServerState();
                     return SERVER_PICK_UP;
                 }
-                navigator.moves.clear();
+                else if(!moveWasOK && robot.getCurrentPosition().getX() != 0){
+                    //we have a obstacle
+                    System.out.println("OBSTACLE A");
+                    robot.printRobotInfo();
+                    navigator.moves.clear();
+                    navigator.moveAroundObstacleAlongX(robot.getCurrentPosition());
+
+                }else if(!moveWasOK && robot.getCurrentPosition().getX() == 0){
+                    System.out.println("&");
+                    System.out.println("OBSTACLE B");
+                    robot.printRobotInfo();
+                    navigator.moves.clear();
+                    navigator.moveAroundObstacleAlongY(robot.getCurrentPosition());
+                }
+                //navigator.moves.clear();
                 //adding steps to turn to y
-                navigator.turnTowardsX(robot.getCurrentPosition());
-                navigator.addStraightMovesAlongY(robot.getCurrentPosition());
+                else if(robot.getCurrentPosition().getX() == 0 && navigator.movesNecessaryToDriveAroundY == 0){
+                    System.out.println("@");
+                    navigator.moves.clear();
+                    navigator.turnTowardsX(robot.getCurrentPosition());
+                    navigator.addStraightMovesAlongY(robot.getCurrentPosition());
+                }else if(robot.getCurrentPosition().getX() != 0 && navigator.movesNecessaryToDriveAroundX == 0){
+                    System.out.println("$");
+                    navigator.moves.clear();
+                    navigator.turnTowardsY(robot.getCurrentPosition());
+                    navigator.addStraightMovesAlongX(robot.getCurrentPosition());
+                }
             }
 
             //executing next move
-
+            if(navigator.movesNecessaryToDriveAroundY > 0) navigator.movesNecessaryToDriveAroundY--;
+            if(navigator.movesNecessaryToDriveAroundX > 0) navigator.movesNecessaryToDriveAroundX--;
             String plannedCommand = navigator.moves.get(0);
             navigator.setCheckFlag(plannedCommand);
             robot.updatePosition(navigator, plannedCommand);
             navigator.moves.remove(0);
             return plannedCommand;
-
-
-            //check if previous move successfull
-
-        /*    if(navigator.robotMoved()){
-                System.out.println("move OK -> " + navigator.anticipatedPosition.getX() + " " +
-                        navigator.anticipatedPosition.getY());
-                navigator.updateRobotPosition();
-            }
-            else {
-                System.out.println("goind around");
-                navigator.goAroundObstacle();
-                navigator.obstacles.add(navigator.anticipatedPosition);
-            }
-
-            //execute next move
-            String responce = navigator.executeMove();
-
-            if(responce.equals(SERVER_PICK_UP)) changeServerState();
-            else if(responce.equals(SERVER_MOVE)) navigator.robotWasMovedForward = true;
-            return responce;*/
         }
         else return SERVER_LOGOUT;
     }
