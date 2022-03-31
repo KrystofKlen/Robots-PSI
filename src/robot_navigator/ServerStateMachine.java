@@ -100,13 +100,19 @@ public class ServerStateMachine {
         }
 
         if(currentState.equals(GETTING_KEY_ID)){
-            if (! robot.setKeyID(Integer.parseInt(messagesFromClient.poll()))){
-                currentState = FAIL;
-                return SERVER_KEY_OUT_OF_RANGE_ERROR;
+            try{
+
+                if (! robot.setKeyID(Integer.parseInt(messagesFromClient.poll()))){
+                    currentState = FAIL;
+                    return SERVER_KEY_OUT_OF_RANGE_ERROR;
+                }
+                robot.setHash(countHash(robot.getKeyID(), SERVER));
+                changeServerState();
+                return String.valueOf(robot.getHash()) + END_MESSAGE;
+
+            }catch (NumberFormatException numex){
+                return SERVER_SYNTAX_ERROR;
             }
-            robot.setHash(countHash(robot.getKeyID(), SERVER));
-            changeServerState();
-            return String.valueOf(robot.getHash()) + END_MESSAGE;
         }
         if(currentState.equals(CONFORMATION)){
             try{
@@ -117,7 +123,9 @@ public class ServerStateMachine {
                     currentState = FAIL;
                     return SERVER_LOGIN_FAILED;
                 }
-            } catch (NumberFormatException ex){ex.printStackTrace();}
+            } catch (NumberFormatException ex){
+                return SERVER_SYNTAX_ERROR;
+            }
 
         }
         if(currentState.equals(GETTING_DIRECTION)){
