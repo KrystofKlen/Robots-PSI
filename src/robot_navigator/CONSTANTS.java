@@ -12,8 +12,13 @@ public class CONSTANTS {
     public static final int REGULAR_MESSAGE_MAX_LENGTH = 20;
     public static final int CLIENT_FINAL_MESSAGE_MAX_LENGTH = 100;
 
+    //__________________CHARGING__________________
+    public static final String CLIENT_FULL_POWER = "FULL POWER";
+    public static final String CLIENT_RECHARGING = "RECHARGING";
+
     //___________________SERVER___________________
     public static final int TIMEOUT_MESSAGE_MILLIS = 1000;
+    public static final int TIMEOUT_CHARGING_MILLIS = 5000;
 
     public static final String SERVER_KEY_REQUEST = "107 KEY REQUEST" + END_MESSAGE;
     public static final String SERVER_OK = "200 OK" + END_MESSAGE;

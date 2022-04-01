@@ -51,21 +51,24 @@ public class ClientHandler implements Runnable{
         List<String> messagesFromFromClient = new ArrayList<>();
         String buffer = "";
         String responce = "";
+        boolean isCharging = false;
 
         while (true){
             try{
-                socket.setSoTimeout(TIMEOUT_MESSAGE_MILLIS);
+                socket.setSoTimeout(isCharging == true ? TIMEOUT_CHARGING_MILLIS : TIMEOUT_MESSAGE_MILLIS);
+                System.out.println(socket.getSoTimeout());
                 if(!serverStateMachine.getCurrentState().equals(ServerState.FIRST_MOVE)) {
                     char r;
                     while (!buffer.contains(END_MESSAGE) && buffer.length() < 100) {
                         r = (char) bufferedReader.read();
                         buffer += r;
-                        if(buffer.length() >= USERNAME_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_USERNAME)) break;
+                        System.out.println(buffer);
+                        /*if(buffer.length() >= USERNAME_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_USERNAME)) break;
                         if(buffer.length() >= CLIENT_KEY_ID_MAX_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_KEY_ID)) break;
                         if(buffer.length() >= CLIENT_OK_MAX_LENGTH &&
                                 (serverStateMachine.getCurrentState().equals(GETTING_POSITION) ||
                                 serverStateMachine.getCurrentState().equals(GETTING_DIRECTION) ||
-                                serverStateMachine.getCurrentState().equals(NAVIGATING_TO_X))) break;
+                                serverStateMachine.getCurrentState().equals(NAVIGATING_TO_X))) break;*/
                     }
 
                     if(!buffer.contains(END_MESSAGE)){
@@ -76,6 +79,22 @@ public class ClientHandler implements Runnable{
                     }
                     buffer = buffer.substring(0,buffer.length() - 2);
                     System.out.println("C: " + buffer);
+
+                    if(isCharging){
+                        if(!buffer.equals(CLIENT_FULL_POWER)){
+                            System.out.println("invalid message");
+                            closeEverything();
+                            break;
+                        }
+                        isCharging = false;
+                        buffer = "";
+                        continue;
+                    }else if(buffer.equals(CLIENT_RECHARGING)){
+                        isCharging = true;
+                        System.out.println("$$$ charging $$$");
+                        buffer = "";
+                        continue;
+                    }
 
                     messagesFromFromClient.add(buffer);
                     serverStateMachine.putToQueue(messagesFromFromClient);
