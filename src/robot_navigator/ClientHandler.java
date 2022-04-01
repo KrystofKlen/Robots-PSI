@@ -6,6 +6,7 @@ import java.net.SocketTimeoutException;
 import java.nio.CharBuffer;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static robot_navigator.CONSTANTS.*;
@@ -62,12 +63,13 @@ public class ClientHandler implements Runnable{
                     while (!buffer.contains(END_MESSAGE) && buffer.length() < 100) {
                         r = (char) bufferedReader.read();
                         buffer += r;
-                        /*if(buffer.length() >= USERNAME_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_USERNAME)) break;
-                        if(buffer.length() >= CLIENT_KEY_ID_MAX_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_KEY_ID)) break;
+
+                        if(buffer.length() >= USERNAME_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_USERNAME)) break;
+                        //if(buffer.length() >= CLIENT_KEY_ID_MAX_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_KEY_ID)) break;
                         if(buffer.length() >= CLIENT_OK_MAX_LENGTH &&
                                 (serverStateMachine.getCurrentState().equals(GETTING_POSITION) ||
                                 serverStateMachine.getCurrentState().equals(GETTING_DIRECTION) ||
-                                serverStateMachine.getCurrentState().equals(NAVIGATING_TO_X))) break;*/
+                                serverStateMachine.getCurrentState().equals(NAVIGATING_TO_X))) break;
                     }
 
                     if(!buffer.contains(END_MESSAGE)){

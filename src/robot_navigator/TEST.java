@@ -2,6 +2,7 @@ package robot_navigator;
 
 import javax.sound.midi.Soundbank;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static robot_navigator.CONSTANTS.*;
@@ -12,9 +13,11 @@ public class TEST {
 
     public static void main(String[] args) {
 
-        String msg = "OK -1 19 ";
-        Scanner sc = new Scanner(msg);
-        System.out.println(msg.matches("OK -?\\d+ -?\\d+"));
+        String msg = "RECHARGING";
+        Pattern p = Pattern.compile("[RECH]");
+        Matcher m = p.matcher(msg);
+        if (m.find())
+            System.out.println("found");
 
     }
 
