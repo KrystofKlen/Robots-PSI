@@ -48,13 +48,7 @@ public class ServerStateMachine {
     }
 
     public String respondToMessage() {
-        if(! msg.checkMessageLength(
-                messagesFromClient.peek() != null ? messagesFromClient.peek().length() : 0,
-                currentState)){
-            currentState = FAIL;
-            return SERVER_SYNTAX_ERROR;
-        }
-        //no response if no message from client
+
         if(currentState.equals(FIRST_MOVE)) {
             changeServerState();
             return SERVER_MOVE;

@@ -62,7 +62,6 @@ public class ClientHandler implements Runnable{
                     while (!buffer.contains(END_MESSAGE) && buffer.length() < 100) {
                         r = (char) bufferedReader.read();
                         buffer += r;
-                        System.out.println(buffer);
                         /*if(buffer.length() >= USERNAME_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_USERNAME)) break;
                         if(buffer.length() >= CLIENT_KEY_ID_MAX_MAX_LENGTH && serverStateMachine.getCurrentState().equals(GETTING_KEY_ID)) break;
                         if(buffer.length() >= CLIENT_OK_MAX_LENGTH &&
@@ -82,7 +81,8 @@ public class ClientHandler implements Runnable{
 
                     if(isCharging){
                         if(!buffer.equals(CLIENT_FULL_POWER)){
-                            System.out.println("invalid message");
+                            bufferedWriter.write(SERVER_LOGIC_ERROR);
+                            bufferedWriter.flush();
                             closeEverything();
                             break;
                         }
