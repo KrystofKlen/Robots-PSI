@@ -1,4 +1,4 @@
-package robot_navigator;
+package robot_navigator.server;
 
 public enum ServerState {
     //AUTHENTIFICATION______________________________
@@ -11,9 +11,7 @@ public enum ServerState {
     GETTING_POSITION,
     GETTING_DIRECTION,
     DIRECTING_TOWARDS_X,
-    NAVIGATING_TO_X,
-    DIRECTING_TOWARDS_Y,
-    NAVIGATING_TOWARDS_Y,
+    NAVIGATING,
 
     //ROBOT REACHED MID
     PICKUP,

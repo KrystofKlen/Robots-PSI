@@ -1,16 +1,17 @@
-package robot_navigator;
+package robot_navigator.server;
 
-import java.util.ArrayList;
-import java.util.List;
+import robot_navigator.KeyOutOfRange;
+import robot_navigator.Robot.Position;
+import robot_navigator.SyntaxError;
+
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import static robot_navigator.CONSTANTS.*;
-import static robot_navigator.ServerState.*;
+import static robot_navigator.server.ServerState.*;
 
 public class Message {
-    private String message;
 
     public boolean checkMessageLength(int messageLength, ServerState currentState){
         if(!currentState.equals(PICKUP) && messageLength > REGULAR_MESSAGE_MAX_LENGTH) return false;
@@ -24,26 +25,17 @@ public class Message {
         else return true;
     }
 
-    public boolean checkMessageLogic(String message, ServerState currentState) throws SyntaxError, KeyOutOfRange{
-        if(currentState.equals(GETTING_KEY_ID)){
-            try{
+    public void checkKeyLogic(String message, ServerState currentState) throws SyntaxError, KeyOutOfRange {
+        if(currentState.equals(GETTING_KEY_ID)) {
+            try {
                 int key = Integer.parseInt(message);
-                if(key < 0 || key > 4) throw new KeyOutOfRange(); //key out of range
-                return true;
-            }catch (NumberFormatException ex){
+                if (key < 0 || key > 4) throw new KeyOutOfRange(); //key out of range
+            } catch (NumberFormatException ex) {
                 //message should contain numbers but it isn't
                 System.out.println("FAIL " + message);
                 throw new SyntaxError();
             }
         }
-        if(currentState.equals(GETTING_POSITION) ||
-        currentState.equals(GETTING_DIRECTION) ||
-        currentState.equals(NAVIGATING_TO_X)){
-            return message.matches("OK \\d+ \\d+") || message.matches("OK -\\d+ \\d+")
-                    || message.matches("OK \\d+ -\\d+") || message.matches("OK -\\d+ -\\d+");
-        }
-
-        return true;
     }
 
     public boolean readPosition(Position position, String message){
@@ -54,7 +46,6 @@ public class Message {
             int x = sc.nextInt();
             int y = sc.nextInt();
             position.setPosition(x,y);
-            System.out.println("READ: "+ x+" "+y);
         }catch (NoSuchElementException ex){
             ex.printStackTrace();
             return false;

@@ -1,27 +1,22 @@
-package robot_navigator;
+package robot_navigator.Robot;
 
 import java.util.Objects;
 
-import static robot_navigator.RobotDirection.*;
+import static robot_navigator.Robot.RobotDirection.*;
 
 
 public class Position {
     private int x,y;
     private RobotDirection currentDirection;
-    public String command;
 
     public Position(){currentDirection = null;}
+
     public Position(int x, int y){
         this.x = x;
         this.y = y;
         currentDirection = null;
     }
-    public Position(int x, int y, RobotDirection direction, String command){
-        this.x = x;
-        this.y = y;
-        currentDirection = direction;
-        this.command = command;
-    }
+
     public Position(Position position){
         this.x = position.getX();
         this.y = position.getY();
@@ -38,9 +33,10 @@ public class Position {
         }else if(y < oldPosition.getY()){
             currentDirection = DOWN;
         }else{
-            throw new IllegalArgumentException("ROBOT WAS NOT MOVET, IT HIT OBSTACLE");
+            throw new IllegalArgumentException("ROBOT WAS NOT MOVED, IT HIT OBSTACLE");
         }
     }
+
     public void setDirection(RobotDirection direction){
         this.currentDirection = direction;
     }
@@ -60,10 +56,6 @@ public class Position {
 
     public RobotDirection getCurrentDirection() {
         return currentDirection;
-    }
-
-    public void setCurrentDirection(RobotDirection currentDirection) {
-        this.currentDirection = currentDirection;
     }
 
     @Override

@@ -11,6 +11,7 @@ public class CONSTANTS {
     public static final int CLIENT_OK_MAX_LENGTH = 12;
     public static final int REGULAR_MESSAGE_MAX_LENGTH = 20;
     public static final int CLIENT_FINAL_MESSAGE_MAX_LENGTH = 100;
+    public static final int CONFORMATION_MAX_LENGTH = 7;
 
     //__________________CHARGING__________________
     public static final String CLIENT_FULL_POWER = "FULL POWER";
@@ -33,8 +34,4 @@ public class CONSTANTS {
     public static final String SERVER_SYNTAX_ERROR = "301 SYNTAX ERROR" + END_MESSAGE;
     public static final String SERVER_LOGIC_ERROR = "302 LOGIC ERROR" + END_MESSAGE;
     public static final String SERVER_KEY_OUT_OF_RANGE_ERROR = "303 KEY OUT OF RANGE" + END_MESSAGE;
-
-
-
-
 }
