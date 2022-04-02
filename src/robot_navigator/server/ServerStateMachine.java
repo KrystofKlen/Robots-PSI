@@ -1,9 +1,9 @@
 package robot_navigator.server;
 
 import robot_navigator.*;
-import robot_navigator.Robot.Navigator;
-import robot_navigator.Robot.Position;
-import robot_navigator.Robot.Robot;
+import robot_navigator.robot.Navigator;
+import robot_navigator.robot.Position;
+import robot_navigator.robot.Robot;
 
 import java.util.*;
 

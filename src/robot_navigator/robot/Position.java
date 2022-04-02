@@ -1,8 +1,8 @@
-package robot_navigator.Robot;
+package robot_navigator.robot;
 
 import java.util.Objects;
 
-import static robot_navigator.Robot.RobotDirection.*;
+import static robot_navigator.robot.RobotDirection.*;
 
 
 public class Position {

@@ -1,7 +1,7 @@
 package robot_navigator.server;
 
 import robot_navigator.KeyOutOfRange;
-import robot_navigator.Robot.Position;
+import robot_navigator.robot.Position;
 import robot_navigator.SyntaxError;
 
 import java.util.NoSuchElementException;

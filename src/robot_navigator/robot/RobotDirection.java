@@ -1,4 +1,4 @@
-package robot_navigator.Robot;
+package robot_navigator.robot;
 
 public enum RobotDirection {
     UP,DOWN,LEFT,RIGHT

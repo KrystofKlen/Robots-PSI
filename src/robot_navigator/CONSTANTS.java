@@ -18,6 +18,7 @@ public class CONSTANTS {
     public static final String CLIENT_RECHARGING = "RECHARGING";
 
     //___________________SERVER___________________
+    public static final int PORT = 5555;
     public static final int TIMEOUT_MESSAGE_MILLIS = 1000;
     public static final int TIMEOUT_CHARGING_MILLIS = 5000;
 

@@ -1,9 +1,9 @@
-package robot_navigator.Robot;
+package robot_navigator.robot;
 
 
 import robot_navigator.CONSTANTS;
 
-import static robot_navigator.Robot.RobotDirection.*;
+import static robot_navigator.robot.RobotDirection.*;
 
 public class Robot {
 

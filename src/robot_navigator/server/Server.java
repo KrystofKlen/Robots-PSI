@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static robot_navigator.CONSTANTS.PORT;
+
 public class Server {
 
     ServerSocket serverSocket;
-    public static final int PORT = 5555;
-    public static final int BACKLOG = 30;
 
     Server(ServerSocket serverSocket){
         this.serverSocket = serverSocket;
@@ -46,7 +46,7 @@ public class Server {
     public static void main(String[] args) {
         ServerSocket serverSocket = null;
         try {
-            serverSocket = new ServerSocket(PORT, BACKLOG);
+            serverSocket = new ServerSocket(PORT);
         } catch (IOException ioEx) {
             ioEx.printStackTrace();
         }
